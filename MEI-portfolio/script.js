@@ -213,12 +213,16 @@
             paintBloom();
             ghostInput.disabled = true;
 
+            const thinkInterval = setInterval(paintBloom, 950);
             const reply = await getAIReply(text);
+            clearInterval(thinkInterval);
+
             ghostInput.disabled = false;
             ghostInput.focus();
             addMessage(reply, 'ai');
         }
-     });
+    });;
+
     function addMessage(text, role) {
       const all = messagesWrap.querySelectorAll('.message');
       all.forEach((msg, i) => { if (all.length - i >= 12) msg.classList.add('fading'); });
