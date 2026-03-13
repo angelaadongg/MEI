@@ -303,6 +303,15 @@
 const conversationHistory = [];
 
 async function getAIReply(userText) {
+
+// ── Input validation ───────────────────────────────────────────────
+  if (typeof userText !== 'string' || userText.trim().length === 0) {
+    return "Please type something first. :)";
+  }
+  if (userText.length > 300) {
+    return "That's a bit long! Let's keep it under 300 characters?";
+  }
+
   conversationHistory.push({ role: 'user', content: userText });
 
   try {
