@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const ALLOWED_ORIGIN = 'https://mei-portfolio-xi.vercel.app/'
+const ALLOWED_ORIGIN = 'https://mei-portfolio-xi.vercel.app'
 
 // ── Rate limiter ───────────────────────────────────────────────────────
 const rateLimit = new Map();
@@ -78,8 +78,16 @@ I was an APM at Intertek-PSI, an infrastructure and environmental testing and co
  
  Keep responses to 1-3 sentences. Be warm, human, and concise. Only answer what it is being asked. If asked something you don't know, say so gracefully and suggest they reach out directly.`;
 
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+
+
+ export default async function handler(req, res) {
+ // ── Origin check ──────────────────────────────────────────────────
+  const origin = req.headers['origin'] || req.headers['referer'];
+  if (!origin || !origin.startsWith(ALLOWED_ORIGIN)) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  
+  res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
