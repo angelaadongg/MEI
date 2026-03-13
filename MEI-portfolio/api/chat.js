@@ -2,6 +2,24 @@ import Anthropic from '@anthropic-ai/sdk';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
+// ── Rate limiter ───────────────────────────────────────────────────────
+const rateLimit = new Map();
+const WINDOW_MS   = 60 * 1000; // 1 minute
+const MAX_REQUESTS = 15;        // per IP per minute
+
+function isRateLimited(ip) {
+  const now    = Date.now();
+  const record = rateLimit.get(ip) || { count: 0, start: now };
+  if (now - record.start > WINDOW_MS) {
+    record.count = 1;
+    record.start = now;
+  } else {
+    record.count++;
+  }
+  rateLimit.set(ip, record);
+  return record.count > MAX_REQUESTS;
+}
+
 const SYSTEM_PROMPT = `You are the portfolio assistant for Angela.
 
 Background:
@@ -64,6 +82,12 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  // ── Check rate limit ─────────────────────────────────────────────────
+  const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+  if (isRateLimited(ip)) {
+    return res.status(429).json({ error: 'Too many requests, please slow down.' });
+  }
 
   const { messages } = req.body;
   if (!messages) return res.status(400).json({ error: 'Missing messages' });
