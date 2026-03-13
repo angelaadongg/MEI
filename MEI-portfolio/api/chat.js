@@ -2,6 +2,8 @@ import Anthropic from '@anthropic-ai/sdk';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
+const ALLOWED_ORIGIN = 'https://mei-portfolio-xi.vercel.app/'
+
 // ── Rate limiter ───────────────────────────────────────────────────────
 const rateLimit = new Map();
 const WINDOW_MS   = 60 * 1000; // 1 minute
